@@ -1,5 +1,6 @@
 // main.js
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
 const heicConvert = require('heic-convert');
@@ -9,9 +10,8 @@ function createWindow() {
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: false,    // Keep Node.js integration disabled
-      contextIsolation: true,    // Enable context isolation
+      nodeIntegration: true,     // Enable Node.js integration
+      contextIsolation: false,   // Disable context isolation
     },
   });
 
@@ -30,25 +30,8 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// Handle open-file-dialog event
-ipcMain.on('open-file-dialog', (event) => {
-  dialog
-    .showOpenDialog({
-      properties: ['openFile', 'multiSelections'],
-      filters: [{ name: 'HEIC Images', extensions: ['heic', 'HEIC'] }],
-    })
-    .then((result) => {
-      if (!result.canceled) {
-        event.sender.send('selected-files', result.filePaths);
-      }
-    })
-    .catch((err) => {
-      console.error('Error opening file dialog:', err);
-    });
-});
-
-// Handle file conversion
-ipcMain.on('files-selected', async (event, filePaths) => {
+// Handle file paths received from renderer process
+ipcMain.on('files-dropped', async (event, filePaths) => {
   for (const filePath of filePaths) {
     const ext = path.extname(filePath).toLowerCase();
     if (ext === '.heic') {
@@ -61,7 +44,6 @@ ipcMain.on('files-selected', async (event, filePaths) => {
         });
 
         const outputFilePath = filePath.replace(/\.heic$/i, '.jpg');
-        console.log(`Converting file ${filePath} to ${outputFilePath}`);
         await fs.writeFile(outputFilePath, outputBuffer);
       } catch (err) {
         console.error(`Error converting file ${filePath}:`, err);
