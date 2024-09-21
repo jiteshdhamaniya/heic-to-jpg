@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "description": "HEIC to JPG Converter",
   "main": "index.js",
+  "mac": {
+    "target": "dmg",
+    "icon": "icon.icns" 
+  },
+  "author": {
+    "name": "Jitesh Dhamaniya",
+    "email": "jiteshdhmanaiya@gmail.com"
+  },
   "scripts": {
     "start": "electron .",
     "build": "electron-builder"
@@ -11,9 +19,7 @@
     "electron": "^25.3.0",
     "electron-builder": "^24.6.0"
   },
-  "dependencies": {
-    "electron": "24.3.1",
-    "electron-builder": "^24.6.0",
+  "dependencies": { 
     "fs-extra": "^11.1.1",
     "heic-convert": "^2.1.0"
   },
