@@ -128,3 +128,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Local builds and image inputs
+.DS_Store
+*.dmg
+*.app/
+*.heic
+*.HEIC
+.env.*
+
+!tests/fixtures/sample.heic

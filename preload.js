@@ -1,10 +1,18 @@
-// preload.js
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
-const { contextBridge, ipcRenderer } = require('electron');
+function subscribe(channel, callback) {
+  const listener = (_event, payload) => callback(payload);
+  ipcRenderer.on(channel, listener);
+  return () => ipcRenderer.removeListener(channel, listener);
+}
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  openFileDialog: () => ipcRenderer.send('open-file-dialog'),
-  onSelectedFiles: (callback) => ipcRenderer.on('selected-files', (event, filePaths) => callback(filePaths)),
-  sendFiles: (filePaths) => ipcRenderer.send('files-selected', filePaths),
-  onConversionDone: (callback) => ipcRenderer.on('conversion-done', callback),
+contextBridge.exposeInMainWorld('converter', {
+  chooseFiles: () => ipcRenderer.invoke('choose-files'),
+  convertDroppedFiles: files => {
+    const paths = Array.from(files, file => webUtils.getPathForFile(file));
+    return ipcRenderer.invoke('convert-files', paths);
+  },
+  onStart: callback => subscribe('conversion-start', callback),
+  onStatus: callback => subscribe('file-status', callback),
+  onDone: callback => subscribe('conversion-done', callback),
 });
